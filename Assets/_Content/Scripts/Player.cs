@@ -53,7 +53,7 @@ public class Player : MonoBehaviour
         [Header("Number of Jumps")]
 
         [Tooltip("Maximum number of jumps")]
-        public int MaxJumps = 1;
+        public int MaxJumps = 2;
     }
 
     [System.Serializable]
@@ -112,6 +112,9 @@ public class Player : MonoBehaviour
     private Vector3 _lastPlatformPosition;
     private Quaternion _lastPlatformRotation;
     private Vector3 _platformVelocity;
+
+    // Written by external components (e.g. WallJump). Added to motion each frame, then decayed.
+    [HideInInspector] public Vector3 ExternalVelocity;
     #endregion
 
     #region Unity Lifecycle
@@ -305,9 +308,13 @@ public class Player : MonoBehaviour
 
     private void SetMovement(float deltaTime)
     {
-        Vector3 motion = _state.Velocity + _platformVelocity;
-
+        Vector3 motion = _state.Velocity + _platformVelocity + ExternalVelocity;
         _references.Controller.Move(motion * deltaTime);
+
+        // Decay ExternalVelocity AFTER the move so the full value is used this frame.
+        // External scripts write to it in LateUpdate to maintain or override the value.
+        ExternalVelocity = Vector3.MoveTowards(ExternalVelocity, Vector3.zero,
+                                               _settings.ExtraForcesDrag * deltaTime);
     }
 
     private void SetState()
@@ -317,7 +324,7 @@ public class Player : MonoBehaviour
             if (State.HorizontalVelocity.sqrMagnitude > .1f)
             {
                 State.CurrentState = PlayerState.Moving;
-                _settings.MaxJumps = 1; // Reset jumps when grounded
+                _settings.MaxJumps = 2; // Reset jumps when grounded
             }
             else
             {

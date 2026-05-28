@@ -2,9 +2,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Adds wall running and wall jumping to the Player component.
-/// Attach to the same GameObject as Player.
-/// Assign the same InputActionAsset as in Player's References.
+/// Titanfall 2-style wall run and wall jump based on momentum conservation.
+///
+/// Core philosophy:
+///   - The wall redirects the player's momentum, it doesn't replace it.
+///   - All forces are additive on top of Player.ExternalVelocity.
+///   - The CharacterController naturally handles sliding along wall surfaces.
+///
+/// Requires Player.cs to expose ExternalVelocity (public Vector3) and include it in SetMovement.
 /// </summary>
 [RequireComponent(typeof(Player))]
 public class WallJump : MonoBehaviour
@@ -17,44 +22,49 @@ public class WallJump : MonoBehaviour
         [Tooltip("Layers considered as walls")]
         public LayerMask WallLayer;
 
-        [Tooltip("Raycast distance to detect a wall on each side")]
-        public float WallCheckDistance = 0.7f;
+        [Tooltip("Raycast distance to detect walls on each side")]
+        public float WallCheckDistance = 0.8f;
+
+        [Tooltip("Minimum total horizontal speed required to enter wall run (m/s)")]
+        public float MinWallRunSpeed = 2f;
 
         [Header("Wall Run")]
 
-        [Tooltip("Gravity counter-force applied while wall running (m/s²)")]
-        public float WallRunGravityCounter = 18f;
+        [Tooltip("Counter-force per second applied to gravity while wall running (m/s²).\n" +
+                 "Net vertical accel = Player gravity (-20) + this value.\n" +
+                 "16 → net -4 m/s²  |  18 → net -2 m/s²  |  20 → hover")]
+        public float WallGravityCounter = 16f;
 
-        [Tooltip("Minimum vertical speed allowed while wall running (m/s, negative = downward)")]
+        [Tooltip("Minimum fall speed while wall running (m/s, negative = downward)")]
         public float WallRunMinFallSpeed = -2f;
 
+        [Tooltip("Additive tangential acceleration along the wall surface (m/s²)")]
+        public float WallTangentialAccel = 5f;
+
+        [Tooltip("Soft speed cap for the ExternalVelocity tangential component (m/s).\n" +
+                 "Excess is removed gradually instead of clamped.")]
+        public float WallMaxTangentialSpeed = 8f;
+
         [Tooltip("Maximum continuous wall run duration (s)")]
-        public float MaxWallRunTime = 2.5f;
+        public float MaxWallRunTime = 3f;
 
         [Header("Wall Jump")]
 
-        [Tooltip("Upward velocity applied on wall jump (m/s) — should be >= Player JumpForce")]
+        [Tooltip("Fraction of ExternalVelocity retained on wall jump (0 = full reset, 1 = full keep)")]
+        [Range(0.7f, 1f)]
+        public float MomentumRetention = 0.9f;
+
+        [Tooltip("Impulse away from the wall on wall jump (m/s)")]
+        public float WallJumpPush = 5f;
+
+        [Tooltip("Upward velocity set on wall jump (m/s). Overrides Player's normal jump force.")]
         public float WallJumpUpForce = 12f;
 
-        [Tooltip("Lateral push away from the wall on wall jump (m/s)")]
-        public float WallJumpSideForce = 7f;
+        [Tooltip("Forward tangential impulse on wall jump (m/s)")]
+        public float WallJumpForwardBoost = 3f;
 
-        [Tooltip("Forward impulse on wall jump (m/s)")]
-        public float WallJumpForwardForce = 4f;
-
-        [Tooltip("Duration over which the lateral force blends back to player input (s)")]
-        public float WallJumpSideDuration = 0.35f;
-
-        [Header("Wall Momentum")]
-
-        [Tooltip("Instant speed boost applied on first wall contact (km/h)")]
-        public float WallInitialBoost = 18f;
-
-        [Tooltip("Speed lost per second while wall running (km/h per second)")]
-        public float WallSpeedDrag = 6f;
-
-        [Tooltip("Speed lost per second after leaving the wall in air (km/h per second)")]
-        public float AirFrictionAfterWall = 9f;
+        [Tooltip("Time before the same wall can be used again (s)")]
+        public float SameWallCooldown = 0.25f;
     }
 
     [System.Serializable]
@@ -77,25 +87,25 @@ public class WallJump : MonoBehaviour
     private RaycastHit _rightWallHit;
     private RaycastHit _leftWallHit;
 
+    // Current wall geometry — updated each frame during wall run
+    private Vector3 _wallNormal;
+    private Vector3 _wallTangent;
+
     // ── Wall run ──────────────────────────────────────────────────────────────
     private bool _isWallRunning;
     private float _wallRunTimer;
 
-    // ── Wall jump ─────────────────────────────────────────────────────────────
-    private bool _wallJumpActive;
-    private Vector3 _wallJumpLateralForce; // horizontal direction set at jump moment
-    private float _wallJumpTimeLeft;
+    // ── Same-wall cooldown ────────────────────────────────────────────────────
+    private Vector3 _lastWallNormal;   // normal of the last wall the player jumped from
+    private float _wallCooldownTimer;
 
-    // ── Wall momentum ─────────────────────────────────────────────────────────
-    private float _wallMomentumSpeed;   // accumulated speed bonus (km/h)
-    private float _originalSpeed = -1f; // Player base speed saved before boost (-1 = not saved)
-
-    // Jump input captured in Update(), used in LateUpdate()
+    // Jump input captured in Update(), consumed in LateUpdate()
     private bool _jumpTriggeredThisFrame;
 
-    // ── Public read-only state ────────────────────────────────────────────────
+    // ── Public read-only state (usable by camera or animation scripts) ────────
     public bool IsWallRunning => _isWallRunning;
-    public bool IsWallJumping => _wallJumpActive;
+    public bool IsWallOnRight => _isWallRight && _isWallRunning;
+    public bool IsWallOnLeft  => _isWallLeft  && _isWallRunning;
 
     // =========================================================================
     #region Unity Lifecycle
@@ -111,19 +121,20 @@ public class WallJump : MonoBehaviour
 
     void Update()
     {
-        // Cache the jump trigger here — triggered is only reliable inside Update
         _jumpTriggeredThisFrame = _jumpAction.triggered;
+
+        if (_wallCooldownTimer > 0f)
+            _wallCooldownTimer -= Time.deltaTime;
 
         CheckForWall();
     }
 
     void LateUpdate()
     {
-        // LateUpdate runs after ALL Update() calls, including Player's.
-        // This lets us read / override the velocity that Player.cs wrote this frame.
+        // LateUpdate runs after ALL Update() calls.
+        // ExternalVelocity written here is picked up by Player.SetMovement on the NEXT frame.
         HandleWallRun();
         HandleWallJump();
-        ApplyWallJumpLateralForce();
     }
 
     #endregion
@@ -131,10 +142,6 @@ public class WallJump : MonoBehaviour
     // =========================================================================
     #region Wall Logic
 
-    /// <summary>
-    /// Raycasts to the left and right to detect nearby walls.
-    /// Also clears _isWallRunning immediately when no wall is found.
-    /// </summary>
     private void CheckForWall()
     {
         _isWallRight = Physics.Raycast(transform.position,  transform.right,
@@ -146,41 +153,64 @@ public class WallJump : MonoBehaviour
             _isWallRunning = false;
     }
 
-    /// <summary>
-    /// Enables wall running while the player is airborne, touching a wall and moving.
-    /// Counteracts gravity so the player slides slowly down instead of falling freely.
-    /// </summary>
     private void HandleWallRun()
     {
         bool wasWallRunning = _isWallRunning;
-        bool touchingWall   = _isWallRight || _isWallLeft;
-        bool hasSpeed       = _player.State.HorizontalVelocity.sqrMagnitude > 1f;
-        bool timeRemaining  = _wallRunTimer < _settings.MaxWallRunTime;
 
-        if (touchingWall && !_player.State.IsGrounded && hasSpeed && timeRemaining)
+        // ── Entry conditions ──────────────────────────────────────────────────
+        bool touchingWall  = _isWallRight || _isWallLeft;
+        bool hasSpeed      = TotalHorizontalSpeed() >= _settings.MinWallRunSpeed;
+        bool timeRemaining = _wallRunTimer < _settings.MaxWallRunTime;
+
+        // Same-wall cooldown: block re-grab if the wall normal is nearly identical
+        RaycastHit hit           = _isWallRight ? _rightWallHit : _leftWallHit;
+        Vector3 candidateNormal  = hit.normal;
+        bool coolingDown         = _wallCooldownTimer > 0f &&
+                                   Vector3.Dot(candidateNormal, _lastWallNormal) > 0.9f;
+
+        if (touchingWall && !_player.State.IsGrounded && hasSpeed && timeRemaining && !coolingDown)
         {
             _isWallRunning  = true;
             _wallRunTimer  += Time.deltaTime;
 
-            // First wall contact: save base speed and apply instant boost
+            _wallNormal  = candidateNormal;
+            _wallTangent = ComputeWallTangent(_wallNormal);
+
+            // ── First wall contact this air sequence ──────────────────────────
             if (!wasWallRunning)
             {
-                _player._settings.MaxJumps = 1;
-                if (_originalSpeed < 0f)
-                    _originalSpeed = _player._settings.Speed;
-                // Keep current momentum if already faster than the initial boost
-                _wallMomentumSpeed = Mathf.Max(_wallMomentumSpeed, _settings.WallInitialBoost);
+                _player._settings.MaxJumps = 2;
+
+                // Project ExternalVelocity onto the wall plane:
+                // remove only the component pushing INTO the wall, keep the rest.
+                float intoWall = Vector3.Dot(_player.ExternalVelocity, _wallNormal);
+                if (intoWall < 0f)
+                    _player.ExternalVelocity -= _wallNormal * intoWall;
             }
 
-            // Gradually lose speed the longer the player stays on the wall
-            _wallMomentumSpeed = Mathf.Max(0f, _wallMomentumSpeed - _settings.WallSpeedDrag * Time.deltaTime);
-            _player._settings.Speed = _originalSpeed + _wallMomentumSpeed;
-
-            // Counteract gravity: the player "clings" and slides down slowly
-            if (_player.State.Velocity.y < 0)
+            // ── Gravity reduction ─────────────────────────────────────────────
+            // Partially counteract Player's gravity (-20 m/s²) so the player slides
+            // down slowly rather than falling. Only active while falling.
+            if (_player.State.Velocity.y < 0f)
             {
-                _player.State.Velocity.y += _settings.WallRunGravityCounter * Time.deltaTime;
+                _player.State.Velocity.y += _settings.WallGravityCounter * Time.deltaTime;
                 _player.State.Velocity.y  = Mathf.Max(_player.State.Velocity.y, _settings.WallRunMinFallSpeed);
+            }
+
+            // ── Tangential acceleration ───────────────────────────────────────
+            // Additive push forward along the wall. Player's input speed (from Player.SetVelocity)
+            // is preserved; this force layers on top via ExternalVelocity.
+            float tangentialSpeed = Vector3.Dot(_player.ExternalVelocity, _wallTangent);
+
+            if (tangentialSpeed < _settings.WallMaxTangentialSpeed)
+            {
+                _player.ExternalVelocity += _wallTangent * _settings.WallTangentialAccel * Time.deltaTime;
+            }
+            else
+            {
+                // Soft cap: bleed off excess gradually instead of a hard cut
+                float excess = tangentialSpeed - _settings.WallMaxTangentialSpeed;
+                _player.ExternalVelocity -= _wallTangent * (excess * 3f * Time.deltaTime);
             }
         }
         else
@@ -189,94 +219,70 @@ public class WallJump : MonoBehaviour
 
             if (_player.State.IsGrounded)
             {
-                // Landing: restore base speed and reset all counters
-                if (_originalSpeed >= 0f)
-                {
-                    _player._settings.Speed = _originalSpeed;
-                    _originalSpeed          = -1f;
-                }
+                // Full reset on landing
                 _wallRunTimer      = 0f;
-                _wallMomentumSpeed = 0f;
-            }
-            else if (_wallMomentumSpeed > 0f && _originalSpeed >= 0f)
-            {
-                // Air friction after leaving the wall: speed decays gradually
-                _wallMomentumSpeed = Mathf.Max(0f, _wallMomentumSpeed - _settings.AirFrictionAfterWall * Time.deltaTime);
-                _player._settings.Speed = _originalSpeed + _wallMomentumSpeed;
-
-                if (_wallMomentumSpeed <= 0f)
-                {
-                    _player._settings.Speed = _originalSpeed;
-                    _originalSpeed          = -1f;
-                }
+                _wallCooldownTimer = 0f;
+                _lastWallNormal    = Vector3.zero;
+                // ExternalVelocity is left to decay naturally via Player.ExtraForcesDrag
             }
         }
     }
 
-    /// <summary>
-    /// Applies a wall jump when Jump is pressed during a wall run.
-    ///
-    /// Vertical velocity is overridden immediately (runs after Player.SetJump).
-    /// Horizontal push is stored and blended over WallJumpSideDuration frames
-    /// by ApplyWallJumpLateralForce().
-    /// </summary>
     private void HandleWallJump()
     {
         if (!_jumpTriggeredThisFrame) return;
         if (!_isWallRunning)          return;
 
-        // Normal of the wall we are running on = direction away from it
-        Vector3 wallNormal = _isWallRight ? _rightWallHit.normal : _leftWallHit.normal;
+        // ── Additive wall jump ────────────────────────────────────────────────
+        //
+        // ExternalVelocity (horizontal momentum):
+        //   existing * retention  +  push away from wall  +  forward boost along wall
+        //
+        // velocity.y (vertical):
+        //   set directly to WallJumpUpForce, overriding Player.SetJump this frame.
+        //   No retention on y — gives a clean upward impulse regardless of current fall speed.
+        //
+        float r = _settings.MomentumRetention;
 
-        // ── Vertical launch ──────────────────────────────────────────────────
-        // Overrides what Player.SetJump already set this frame (WallJumpUpForce > JumpForce)
+        _player.ExternalVelocity = _player.ExternalVelocity * r
+                                 + _wallNormal  * _settings.WallJumpPush
+                                 + _wallTangent * _settings.WallJumpForwardBoost;
+
         _player.State.Velocity.y = _settings.WallJumpUpForce;
 
-        // ── Horizontal launch (applied frame-by-frame below) ─────────────────
-        _wallJumpLateralForce   = wallNormal         * _settings.WallJumpSideForce
-                                + transform.forward  * _settings.WallJumpForwardForce;
-        _wallJumpLateralForce.y = 0f;
+        // Register cooldown so the player cannot immediately re-grab the same wall
+        _lastWallNormal    = _wallNormal;
+        _wallCooldownTimer = _settings.SameWallCooldown;
 
-        _wallJumpActive   = true;
-        _wallJumpTimeLeft = _settings.WallJumpSideDuration;
-
-        
-        // Exit wall run
         _isWallRunning = false;
         _wallRunTimer  = 0f;
     }
 
-    /// <summary>
-    /// Each LateUpdate during the wall jump window, blends the horizontal velocity
-    /// from the wall jump direction back toward the player's input velocity.
-    ///
-    /// ratio 1 → 0 : full wall jump push → full player control
-    ///
-    /// Because Player.SetVelocity already wrote x/z this frame, we read that
-    /// as the "player input" side of the blend — so control is restored naturally.
-    /// </summary>
-    private void ApplyWallJumpLateralForce()
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private float TotalHorizontalSpeed()
     {
-        if (!_wallJumpActive) return;
+        Vector3 h = _player.State.HorizontalVelocity
+                  + new Vector3(_player.ExternalVelocity.x, 0f, _player.ExternalVelocity.z);
+        return h.magnitude;
+    }
 
-        _wallJumpTimeLeft -= Time.deltaTime;
+    private Vector3 ComputeWallTangent(Vector3 wallNormal)
+    {
+        // Horizontal tangent to the wall surface: Cross(wallNormal, up)
+        Vector3 tangent = Vector3.Cross(wallNormal, Vector3.up).normalized;
 
-        if (_wallJumpTimeLeft <= 0f)
-        {
-            _wallJumpActive = false;
-            return;
-        }
+        // Choose the sign that aligns with the player's current motion direction
+        Vector3 motion = _player.State.HorizontalVelocity
+                       + new Vector3(_player.ExternalVelocity.x, 0f, _player.ExternalVelocity.z);
 
-        float ratio = _wallJumpTimeLeft / _settings.WallJumpSideDuration; // 1 → 0
+        if (0.01f > motion.sqrMagnitude)
+            motion = transform.forward;
 
-        // Player.SetVelocity already set this frame's input-based x/z
-        Vector3 inputVelocity = new Vector3(_player.State.Velocity.x, 0f, _player.State.Velocity.z);
+        if (Vector3.Dot(tangent, motion) < 0f)
+            tangent = -tangent;
 
-        // Lerp: start = full wall jump push, end = full player input
-        Vector3 blended = Vector3.Lerp(inputVelocity, _wallJumpLateralForce, ratio);
-
-        _player.State.Velocity.x = blended.x;
-        _player.State.Velocity.z = blended.z;
+        return tangent;
     }
 
     #endregion
