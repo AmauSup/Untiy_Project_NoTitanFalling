@@ -44,6 +44,17 @@ public class WallJump : MonoBehaviour
 
         [Tooltip("Duration over which the lateral force blends back to player input (s)")]
         public float WallJumpSideDuration = 0.35f;
+
+        [Header("Wall Momentum")]
+
+        [Tooltip("Instant speed boost applied on first wall contact (km/h)")]
+        public float WallInitialBoost = 18f;
+
+        [Tooltip("Speed lost per second while wall running (km/h per second)")]
+        public float WallSpeedDrag = 6f;
+
+        [Tooltip("Speed lost per second after leaving the wall in air (km/h per second)")]
+        public float AirFrictionAfterWall = 9f;
     }
 
     [System.Serializable]
@@ -74,6 +85,10 @@ public class WallJump : MonoBehaviour
     private bool _wallJumpActive;
     private Vector3 _wallJumpLateralForce; // horizontal direction set at jump moment
     private float _wallJumpTimeLeft;
+
+    // ── Wall momentum ─────────────────────────────────────────────────────────
+    private float _wallMomentumSpeed;   // accumulated speed bonus (km/h)
+    private float _originalSpeed = -1f; // Player base speed saved before boost (-1 = not saved)
 
     // Jump input captured in Update(), used in LateUpdate()
     private bool _jumpTriggeredThisFrame;
@@ -137,14 +152,29 @@ public class WallJump : MonoBehaviour
     /// </summary>
     private void HandleWallRun()
     {
-        bool touchingWall  = _isWallRight || _isWallLeft;
-        bool hasSpeed      = _player.State.HorizontalVelocity.sqrMagnitude > 1f;
-        bool timeRemaining = _wallRunTimer < _settings.MaxWallRunTime;
+        bool wasWallRunning = _isWallRunning;
+        bool touchingWall   = _isWallRight || _isWallLeft;
+        bool hasSpeed       = _player.State.HorizontalVelocity.sqrMagnitude > 1f;
+        bool timeRemaining  = _wallRunTimer < _settings.MaxWallRunTime;
 
         if (touchingWall && !_player.State.IsGrounded && hasSpeed && timeRemaining)
         {
             _isWallRunning  = true;
             _wallRunTimer  += Time.deltaTime;
+
+            // First wall contact: save base speed and apply instant boost
+            if (!wasWallRunning)
+            {
+                _player._settings.MaxJumps = 1;
+                if (_originalSpeed < 0f)
+                    _originalSpeed = _player._settings.Speed;
+                // Keep current momentum if already faster than the initial boost
+                _wallMomentumSpeed = Mathf.Max(_wallMomentumSpeed, _settings.WallInitialBoost);
+            }
+
+            // Gradually lose speed the longer the player stays on the wall
+            _wallMomentumSpeed = Mathf.Max(0f, _wallMomentumSpeed - _settings.WallSpeedDrag * Time.deltaTime);
+            _player._settings.Speed = _originalSpeed + _wallMomentumSpeed;
 
             // Counteract gravity: the player "clings" and slides down slowly
             if (_player.State.Velocity.y < 0)
@@ -157,9 +187,29 @@ public class WallJump : MonoBehaviour
         {
             _isWallRunning = false;
 
-            // Reset the wall run timer only when fully grounded
             if (_player.State.IsGrounded)
-                _wallRunTimer = 0f;
+            {
+                // Landing: restore base speed and reset all counters
+                if (_originalSpeed >= 0f)
+                {
+                    _player._settings.Speed = _originalSpeed;
+                    _originalSpeed          = -1f;
+                }
+                _wallRunTimer      = 0f;
+                _wallMomentumSpeed = 0f;
+            }
+            else if (_wallMomentumSpeed > 0f && _originalSpeed >= 0f)
+            {
+                // Air friction after leaving the wall: speed decays gradually
+                _wallMomentumSpeed = Mathf.Max(0f, _wallMomentumSpeed - _settings.AirFrictionAfterWall * Time.deltaTime);
+                _player._settings.Speed = _originalSpeed + _wallMomentumSpeed;
+
+                if (_wallMomentumSpeed <= 0f)
+                {
+                    _player._settings.Speed = _originalSpeed;
+                    _originalSpeed          = -1f;
+                }
+            }
         }
     }
 
@@ -190,6 +240,7 @@ public class WallJump : MonoBehaviour
         _wallJumpActive   = true;
         _wallJumpTimeLeft = _settings.WallJumpSideDuration;
 
+        
         // Exit wall run
         _isWallRunning = false;
         _wallRunTimer  = 0f;

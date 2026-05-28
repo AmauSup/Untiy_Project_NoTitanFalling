@@ -49,6 +49,11 @@ public class Player : MonoBehaviour
 
         [Tooltip("GUI logs of current state")]
         public bool StateLogs;
+
+        [Header("Number of Jumps")]
+
+        [Tooltip("Maximum number of jumps")]
+        public int MaxJumps = 1;
     }
 
     [System.Serializable]
@@ -78,7 +83,7 @@ public class Player : MonoBehaviour
         public Vector3 HorizontalVelocity => new Vector3(Velocity.x, 0, Velocity.z);
     }
 
-    [SerializeField] private Settings _settings;
+    [SerializeField] public Settings _settings;
     [SerializeField] private References _references;
     [SerializeField, ReadOnly] private StateContainer _state;
 
@@ -287,9 +292,14 @@ public class Player : MonoBehaviour
         //     _state.Ground = null;
         // }
 
-        if (_jumpAction.triggered)//to fly
+        // if (_jumpAction.triggered)//to fly
+        //  {
+        //      _state.Velocity.y = _settings.JumpForce;
+        //  }
+        if (_jumpAction.triggered && _settings.MaxJumps > 0)//to double jump
          {
-             _state.Velocity.y = _settings.JumpForce;
+            _state.Velocity.y = _settings.JumpForce;
+            _settings.MaxJumps--;
          }
     }
 
@@ -307,6 +317,7 @@ public class Player : MonoBehaviour
             if (State.HorizontalVelocity.sqrMagnitude > .1f)
             {
                 State.CurrentState = PlayerState.Moving;
+                _settings.MaxJumps = 1; // Reset jumps when grounded
             }
             else
             {
