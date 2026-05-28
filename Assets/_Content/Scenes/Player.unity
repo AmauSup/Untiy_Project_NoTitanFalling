@@ -1024,6 +1024,10 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4162901986030213408, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 12.024689
+      objectReference: {fileID: 0}
+    - target: {fileID: 4162901986030213408, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
       propertyPath: m_LocalScale.z
       value: 5.9234996
       objectReference: {fileID: 0}
@@ -1261,6 +1265,7 @@ GameObject:
   - component: {fileID: 1456169376}
   - component: {fileID: 1456169377}
   - component: {fileID: 1456169378}
+  - component: {fileID: 1456169379}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1344,6 +1349,7 @@ MonoBehaviour:
     IsPaused: 0
     Velocity: {x: 0, y: 0, z: 0}
     Ground: {fileID: 0}
+  ExternalVelocity: {x: 0, y: 0, z: 0}
 --- !u!114 &1456169377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1408,18 +1414,38 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 256
     WallCheckDistance: 0.7
-    WallRunGravityCounter: 9
+    MinWallRunSpeed: 2
+    WallGravityCounter: 16
     WallRunMinFallSpeed: -2
+    WallTangentialAccel: 5
+    WallMaxTangentialSpeed: 8
     MaxWallRunTime: 2.5
+    MomentumRetention: 0.9
+    WallJumpPush: 5
     WallJumpUpForce: 10
-    WallJumpSideForce: 15
-    WallJumpForwardForce: 10
-    WallJumpSideDuration: 0.35
-    WallInitialBoost: 18
-    WallSpeedDrag: 6
-    AirFrictionAfterWall: 9
+    WallJumpForwardBoost: 3
+    SameWallCooldown: 0.25
   _references:
     InputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+--- !u!114 &1456169379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456169373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa4a6cd1977348840b566585990a0a6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AirDash
+  _settings:
+    DashForce: 15
+    Cooldown: 0.8
+    MaxAirDashes: 1
+    KeyboardKey: 19
+    UseGamepadSouth: 0
+    InputBuffer: 0.15
 --- !u!1 &1510530546
 GameObject:
   m_ObjectHideFlags: 0
@@ -2424,7 +2450,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8961495861262154936, guid: 0281fd41d2f49b340853df86a1b1bdad, type: 3}
       propertyPath: m_LocalScale.z
-      value: 5.9234996
+      value: 8.632316
       objectReference: {fileID: 0}
     - target: {fileID: 8961495861262154936, guid: 0281fd41d2f49b340853df86a1b1bdad, type: 3}
       propertyPath: m_LocalPosition.x
