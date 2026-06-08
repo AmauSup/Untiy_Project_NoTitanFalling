@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
         Loser,
         Winner,
         WallRunning,
+        WallRunningLeft,
+        WallRunningRight,
     }
 
     [System.Serializable]
@@ -69,6 +71,9 @@ public class Player : MonoBehaviour
 
         [Tooltip("Maximum number of jumps (1 = single jump, 2 = double jump)")]
         public int MaxJumps = 2;
+
+        [Tooltip("Horizontal speed applied in the looking direction on wall jump (m/s)")]
+        public float WallJumpForwardForce = 8f;
 
         [Header("Debug")]
 
@@ -440,6 +445,9 @@ public class Player : MonoBehaviour
 
         if (_state.IsStickedToWall)
         {
+            Vector3 dir = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
+            _state.Velocity.x = dir.x * _settings.WallJumpForwardForce;
+            _state.Velocity.z = dir.z * _settings.WallJumpForwardForce;
             _state.IsStickedToWall = false;
             _state.CanStickToWalls = true;
             _jumpsLeft = _settings.MaxJumps;
@@ -471,8 +479,28 @@ public class Player : MonoBehaviour
         _references.Controller.Move(motion * deltaTime);
     }
 
+    public void Respawn(Vector3 position, Quaternion rotation)
+    {
+        _references.Controller.enabled = false;
+        transform.SetPositionAndRotation(position, rotation);
+        _references.Controller.enabled = true;
+
+        _state.Velocity = Vector3.zero;
+        ExternalVelocity = Vector3.zero;
+        _state.Ground = null;
+        _state.IsStickedToWall = false;
+        _state.CanStickToWalls = true;
+        _jumpsLeft = _settings.MaxJumps;
+        _state.CurrentState = PlayerState.Idle;
+    }
+
     private void SetState()
     {
+        if (State.CurrentState == PlayerState.Eliminated ||
+            State.CurrentState == PlayerState.Loser ||
+            State.CurrentState == PlayerState.Winner)
+            return;
+
         if (State.IsGrounded)
         {
             if (State.HorizontalVelocity.sqrMagnitude > .1f)
@@ -482,7 +510,9 @@ public class Player : MonoBehaviour
         }
         else if (State.IsStickedToWall)
         {
-            State.CurrentState = PlayerState.WallRunning;
+            State.CurrentState = State.AnimationCenter >= 0
+                ? PlayerState.WallRunningRight
+                : PlayerState.WallRunningLeft;
         }
         else
         {

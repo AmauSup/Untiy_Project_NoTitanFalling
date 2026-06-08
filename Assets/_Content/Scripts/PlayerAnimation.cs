@@ -45,7 +45,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private void Init()
     {
-        _stateMapper = new PlayerAnimationStateMapper[9];
+        _stateMapper = new PlayerAnimationStateMapper[10];
 
         _stateMapper[0] = new PlayerAnimationStateMapper()
         {
@@ -113,10 +113,18 @@ public class PlayerAnimation : MonoBehaviour
 
         _stateMapper[8] = new PlayerAnimationStateMapper()
         {
-            PlayerState = Player.PlayerState.WallRunning,
-            AnimatorState = "move",
+            PlayerState = Player.PlayerState.WallRunningLeft,
+            AnimatorState = "runwallleft",
             BlockingState = "",
-            Trigger = "trigger_move",
+            Trigger = "trigger_runwallleft",
+        };
+
+        _stateMapper[9] = new PlayerAnimationStateMapper()
+        {
+            PlayerState = Player.PlayerState.WallRunningRight,
+            AnimatorState = "runwallright",
+            BlockingState = "",
+            Trigger = "trigger_runwallright",
         };
     }
 
@@ -149,10 +157,10 @@ public class PlayerAnimation : MonoBehaviour
                 _references.Anim.SetFloat("run", Mathf.InverseLerp(0, .8f, Player.Instance.State.Running));
                 _references.Anim.SetFloat("wall", 0.5f);
                 break;
-            case Player.PlayerState.WallRunning:
+            case Player.PlayerState.WallRunningLeft:
+            case Player.PlayerState.WallRunningRight:
                 _references.Anim.SetFloat("move", Player.Instance.State.HorizontalVelocity.magnitude);
                 _references.Anim.SetFloat("run", 1f);
-                _references.Anim.SetFloat("wall", Player.Instance.State.AnimationCenter * .5f + .5f);
                 break;
         }
     }
