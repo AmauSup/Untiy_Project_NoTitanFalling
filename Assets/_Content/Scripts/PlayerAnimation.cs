@@ -114,17 +114,17 @@ public class PlayerAnimation : MonoBehaviour
         _stateMapper[8] = new PlayerAnimationStateMapper()
         {
             PlayerState = Player.PlayerState.WallRunningLeft,
-            AnimatorState = "runwallleft",
+            AnimatorState = "run wall left",
             BlockingState = "",
-            Trigger = "trigger_runwallleft",
+            Trigger = "trigger_run_wall_left",
         };
 
         _stateMapper[9] = new PlayerAnimationStateMapper()
         {
             PlayerState = Player.PlayerState.WallRunningRight,
-            AnimatorState = "runwallright",
+            AnimatorState = "run wall right",
             BlockingState = "",
-            Trigger = "trigger_runwallright",
+            Trigger = "trigger_run_wall_right",
         };
     }
 

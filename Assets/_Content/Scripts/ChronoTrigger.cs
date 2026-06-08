@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class ChronoTrigger : MonoBehaviour
 {
-    [Tooltip("Item IDs the player must carry to stop the chrono. Leave empty to stop without condition.")]
+    public enum Mode { Start, Stop }
+
+    [SerializeField] private Mode _mode = Mode.Start;
+
+    [Tooltip("Item IDs the player must carry to stop the chrono. Only used in Stop mode. Leave empty to stop without condition.")]
     [SerializeField] private string[] _requiredItems;
 
     void OnTriggerEnter(Collider other)
@@ -10,13 +14,17 @@ public class ChronoTrigger : MonoBehaviour
         if (other.GetComponent<Player>() == null && other.GetComponentInParent<Player>() == null)
             return;
 
-        if (!ChronoManager.Instance.IsRunning)
+        if (_mode == Mode.Start)
         {
-            ChronoManager.Instance.StartChrono();
+            if (!ChronoManager.Instance.IsRunning)
+                ChronoManager.Instance.StartChrono();
             return;
         }
 
-        // Chrono running: stop only if player has all required items
+        // Stop mode: chrono must be running
+        if (!ChronoManager.Instance.IsRunning) return;
+
+        // Check required items
         if (_requiredItems != null && _requiredItems.Length > 0)
         {
             PlayerInventory inv = PlayerInventory.Instance;

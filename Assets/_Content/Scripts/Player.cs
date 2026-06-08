@@ -243,54 +243,50 @@ public class Player : MonoBehaviour
         bool wasStickedToWall = _state.IsStickedToWall;
         bool isGrounded = rayHit || sphereHit;
 
-        // Wall run
+        // Wall detection: left/right raycasts from CharacterController center
         bool isStickedToWall = false;
-        if (!isGrounded && _settings.WallRun.CanRunOnWalls && _state.CanStickToWalls && _state.VerticalVelocity < 0)
+        if (!isGrounded && _settings.WallRun.CanRunOnWalls && _state.CanStickToWalls &&
+            (_state.VerticalVelocity <= 0 || _state.IsStickedToWall))
         {
-            int[] wallCheckAngles = new int[6] { 80, 70, 60, 50, 40, 30 };
-            int raySign = 1;
+            CharacterController cc = _references.Controller;
+            Vector3 wallOrigin = transform.position + cc.center;
+            float wallDist = cc.radius + 0.4f;
+            RaycastHit wallHit;
 
-            for (int i = 0; i < wallCheckAngles.Length; i++)
+            bool rightWall = Physics.Raycast(wallOrigin, transform.right, out wallHit, wallDist, _settings.WallRun.WallLayer);
+            if (rightWall)
             {
-                if (isStickedToWall)
-                    break;
-
-                for (int u = -1; u <= 1; u += 2)
-                {
-                    Vector3 rayDir = Quaternion.Euler(0, wallCheckAngles[i] * u, 0) * transform.forward;
-                    float rayOffset = _references.Controller.radius * .8f;
-                    float raySize = _references.Controller.radius * .7f;
-
-                    isStickedToWall = Physics.Raycast(rayOrigin + rayDir * rayOffset, rayDir, out rayInfo, raySize, _settings.WallRun.WallLayer);
-                    Debug.DrawRay(rayOrigin + rayDir * rayOffset, rayDir * raySize, isStickedToWall ? Color.green : Color.red);
-
-                    if (isStickedToWall)
-                    {
-                        raySign = u;
-                        goto AfterRaycastWall;
-                    }
-                }
+                isStickedToWall = true;
+                _state.AnimationCenter = 1;
+                _wallDirection = Vector3.ProjectOnPlane(Vector3.Cross(wallHit.normal, Vector3.up), Vector3.up) * Mathf.Sign(Vector3.Cross(transform.forward, wallHit.normal).y);
+                _wallPosition = wallHit.point;
             }
-            AfterRaycastWall:
+            else if (Physics.Raycast(wallOrigin, -transform.right, out wallHit, wallDist, _settings.WallRun.WallLayer))
+            {
+                isStickedToWall = true;
+                _state.AnimationCenter = -1;
+                _wallDirection = Vector3.ProjectOnPlane(Vector3.Cross(wallHit.normal, Vector3.up), Vector3.up) * Mathf.Sign(Vector3.Cross(transform.forward, wallHit.normal).y);
+                _wallPosition = wallHit.point;
+            }
+
+            Debug.DrawRay(wallOrigin, transform.right * wallDist, rightWall ? Color.green : Color.red);
+            Debug.DrawRay(wallOrigin, -transform.right * wallDist, (!rightWall && isStickedToWall) ? Color.green : Color.red);
 
             if (!_state.IsStickedToWall && isStickedToWall)
                 _state.StickedTime = 0;
             else if (_state.IsStickedToWall && !isStickedToWall)
-                _state.CanStickToWalls = true;
+                _state.CanStickToWalls = false;
 
             _state.IsStickedToWall = isStickedToWall;
 
             if (_state.IsStickedToWall)
             {
-                _wallDirection = Vector3.ProjectOnPlane(Vector3.Cross(rayInfo.normal, Vector3.up), Vector3.up) * Mathf.Sign(Vector3.Cross(transform.forward, rayInfo.normal).y);
-                _wallPosition = rayInfo.point;
-                _state.AnimationCenter = raySign;
                 _state.Running = 1;
-
                 if (_state.StickedTime >= _settings.WallRun.StickDuration)
                 {
                     _state.IsStickedToWall = false;
                     _state.CanStickToWalls = false;
+                    isStickedToWall = false;
                 }
             }
         }
@@ -303,28 +299,24 @@ public class Player : MonoBehaviour
         if (!isStickedToWall)
             _state.AnimationCenter = 0;
 
-        if (isGrounded || isStickedToWall)
-        {
-            bool justLanded      = !wasGrounded      && isGrounded;
-            bool justGrabbedWall = !wasStickedToWall && isStickedToWall;
-            if (justLanded || justGrabbedWall)
-                _jumpsLeft = _settings.MaxJumps;
+        // Reset jumps on landing or grabbing wall
+        if ((!wasGrounded && isGrounded) || (!wasStickedToWall && isStickedToWall))
+            _jumpsLeft = _settings.MaxJumps;
 
+        // Platform tracking — only when grounded, never when on wall
+        if (isGrounded)
+        {
             Transform currentGround = rayHit ? rayInfo.collider.transform : _overlapResults[0].transform;
 
-            // Initialize references when landing on a new surface to prevent teleporting
             if (currentGround != _state.Ground)
             {
                 _state.Ground = currentGround;
                 _lastPlatformPosition = _state.Ground.position;
                 _lastPlatformRotation = _state.Ground.rotation;
-
                 _platformVelocity.y = 0;
-
                 return;
             }
 
-            // Rotate player around platform pivot
             Quaternion rotationDelta = _state.Ground.rotation * Quaternion.Inverse(_lastPlatformRotation);
             float platformYaw = rotationDelta.eulerAngles.y;
 
@@ -336,33 +328,21 @@ public class Player : MonoBehaviour
                 transform.Rotate(0, platformYaw, 0);
             }
 
-            // Translation delta
-            Vector3 platformDelta = _state.Ground.position - _lastPlatformPosition;
-            transform.position += platformDelta;
-
-            // Store current state for next frame
+            transform.position += _state.Ground.position - _lastPlatformPosition;
             _lastPlatformPosition = _state.Ground.position;
             _lastPlatformRotation = _state.Ground.rotation;
-
-            // Sync physics broadphase to prevents CC from seeing stale overlap
             Physics.SyncTransforms();
-
-            // Reset platform velocity
             _platformVelocity = Vector3.zero;
         }
         else
         {
-            // Inherit platform velocity when player left the ground
             if (wasGrounded && _state.Ground != null)
-            {
                 _platformVelocity = (_state.Ground.position - _lastPlatformPosition) / Time.deltaTime;
-            }
-            // Decay velocity when player is in the air
             else
             {
-                Vector3 platformVelocity = Vector3.MoveTowards(_platformVelocity, Vector3.zero, _settings.ExtraForcesDrag * deltaTime);
-                platformVelocity.y = _platformVelocity.y;
-                _platformVelocity = platformVelocity;
+                Vector3 pv = Vector3.MoveTowards(_platformVelocity, Vector3.zero, _settings.ExtraForcesDrag * deltaTime);
+                pv.y = _platformVelocity.y;
+                _platformVelocity = pv;
             }
 
             _state.Ground = null;
@@ -501,18 +481,18 @@ public class Player : MonoBehaviour
             State.CurrentState == PlayerState.Winner)
             return;
 
-        if (State.IsGrounded)
+        if (State.IsStickedToWall)
+        {
+            State.CurrentState = State.AnimationCenter >= 0
+                ? PlayerState.WallRunningRight
+                : PlayerState.WallRunningLeft;
+        }
+        else if (State.IsGrounded)
         {
             if (State.HorizontalVelocity.sqrMagnitude > .1f)
                 State.CurrentState = PlayerState.Moving;
             else
                 State.CurrentState = PlayerState.Idle;
-        }
-        else if (State.IsStickedToWall)
-        {
-            State.CurrentState = State.AnimationCenter >= 0
-                ? PlayerState.WallRunningRight
-                : PlayerState.WallRunningLeft;
         }
         else
         {

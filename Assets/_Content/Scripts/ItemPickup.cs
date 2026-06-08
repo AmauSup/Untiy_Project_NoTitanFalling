@@ -22,14 +22,24 @@ public class ItemPickup : MonoBehaviour
     {
         if (PlayerInventory.Instance == null) return;
         if (other.GetComponent<Player>() == null && other.GetComponentInParent<Player>() == null) return;
+        if (string.IsNullOrEmpty(_itemId)) return;
 
         PlayerInventory.Instance.PickUp(_itemId);
-        gameObject.SetActive(false);
+        SetPickedUp(true);
+    }
+
+    private void SetPickedUp(bool pickedUp)
+    {
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+            r.enabled = !pickedUp;
+
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+            c.enabled = !pickedUp;
     }
 
     public static void RespawnAll()
     {
         foreach (ItemPickup item in _registry)
-            item.gameObject.SetActive(true);
+            item.SetPickedUp(false);
     }
 }

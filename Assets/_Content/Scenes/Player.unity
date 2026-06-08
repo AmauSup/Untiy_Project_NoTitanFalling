@@ -170,6 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f163afaf37ac22e439a577f667d3a51e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronoTrigger
+  _mode: 0
   _requiredItems: []
 --- !u!4 &40269984
 Transform:
@@ -1106,7 +1107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f163afaf37ac22e439a577f667d3a51e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronoTrigger
-  _requiredItems: []
+  _mode: 1
+  _requiredItems:
+  - item
 --- !u!4 &488807760
 Transform:
   m_ObjectHideFlags: 0
@@ -2449,10 +2452,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a13b107832416d149984a73107de2cf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventory
-  _itemList: []
+  _itemList:
+  - 
   OnItemPickedUp:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: 91d12b2c2c25e9c4cbe2be8308444acc, type: 3}
+        m_TargetAssemblyTypeName: UnityEditor.MonoScript, UnityEditor.CoreModule
+        m_MethodName: set_name
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnItemRemoved:
     m_PersistentCalls:
       m_Calls: []
@@ -3021,13 +3037,13 @@ MonoBehaviour:
     BlockingState: 
     Trigger: trigger_win
   - PlayerState: 9
-    AnimatorState: runwallleft
+    AnimatorState: run wall left
     BlockingState: 
-    Trigger: trigger_runwallleft
+    Trigger: trigger_run_wall_left
   - PlayerState: 10
-    AnimatorState: runwallright
+    AnimatorState: run wall right
     BlockingState: 
-    Trigger: trigger_runwallright
+    Trigger: trigger_run_wall_right
 --- !u!114 &1456169378
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3852,6 +3868,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ChronoManager
   _timerText: {fileID: 578402523}
   _scoresText: {fileID: 1689285727}
+  _restartCooldown: 2
 --- !u!114 &1806777317
 MonoBehaviour:
   m_ObjectHideFlags: 0

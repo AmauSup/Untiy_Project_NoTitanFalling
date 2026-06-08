@@ -10,8 +10,12 @@ public class ChronoManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _timerText;
     [SerializeField] private TextMeshProUGUI _scoresText;
 
+    [Tooltip("Délai en secondes après un stop avant de pouvoir relancer")]
+    [SerializeField] private float _restartCooldown = 2f;
+
     private float _elapsed;
     private bool _running;
+    private float _cooldownRemaining;
     private readonly List<float> _scores = new List<float>();
 
     public bool IsRunning => _running;
@@ -23,6 +27,9 @@ public class ChronoManager : MonoBehaviour
 
     void Update()
     {
+        if (_cooldownRemaining > 0)
+            _cooldownRemaining -= Time.deltaTime;
+
         if (!_running) return;
         _elapsed += Time.deltaTime;
         if (_timerText) _timerText.text = FormatTime(_elapsed);
@@ -30,20 +37,21 @@ public class ChronoManager : MonoBehaviour
 
     public void StartChrono()
     {
+        if (_cooldownRemaining > 0) return;
+
         _elapsed = 0f;
         _running = true;
+        ItemPickup.RespawnAll();
+        PlayerInventory.Instance?.Clear();
     }
 
     public void StopChrono()
     {
         if (!_running) return;
         _running = false;
+        _cooldownRemaining = _restartCooldown;
         _scores.Add(_elapsed);
         RefreshScoresDisplay();
-
-        // Respawn items and clear inventory for next run
-        ItemPickup.RespawnAll();
-        PlayerInventory.Instance?.Clear();
     }
 
     private void RefreshScoresDisplay()
