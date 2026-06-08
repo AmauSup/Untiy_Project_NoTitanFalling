@@ -557,6 +557,50 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1456169374}
     m_Modifications:
+    - target: {fileID: 3022831093948077032, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3988211556416646942, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4024205389411194182, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4373259482587345497, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4557380020227964464, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.032
+      objectReference: {fileID: 0}
+    - target: {fileID: 4557380020227964464, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.604
+      objectReference: {fileID: 0}
+    - target: {fileID: 4557380020227964464, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.37
+      objectReference: {fileID: 0}
+    - target: {fileID: 5456371692311960461, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5611610966555395474, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5640748412284255879, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6074289766237588829, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7011957565800906987, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -596,6 +640,10 @@ PrefabInstance:
     - target: {fileID: 7011957565800906987, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7435775387858274659, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7639418806218873425, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
       propertyPath: m_Name
@@ -1138,15 +1186,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fce866d0c086c043af6a6e5e635d197, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstPerson
-  _settings:
-    LookSensitivity: 20
-    HeadHeight: 1.6
-    DefaultPitch: 0
-    MinPitch: -80
-    MaxPitch: 80
-  _references:
-    InputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-    Target: {fileID: 1456169374}
 --- !u!1 &979033922
 GameObject:
   m_ObjectHideFlags: 0
