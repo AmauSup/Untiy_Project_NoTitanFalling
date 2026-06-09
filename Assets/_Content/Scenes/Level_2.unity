@@ -2360,13 +2360,13 @@ MonoBehaviour:
     BlockingState: 
     Trigger: trigger_win
   - PlayerState: 9
-    AnimatorState: run wall left
+    AnimatorState: move
     BlockingState: 
-    Trigger: trigger_run_wall_left
+    Trigger: trigger_move
   - PlayerState: 10
-    AnimatorState: run wall right
+    AnimatorState: move
     BlockingState: 
-    Trigger: trigger_run_wall_right
+    Trigger: trigger_move
 --- !u!114 &1456169378
 MonoBehaviour:
   m_ObjectHideFlags: 0
