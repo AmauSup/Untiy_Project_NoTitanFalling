@@ -72,6 +72,10 @@ public class PlayerCamera : MonoBehaviour
 
     void Awake()
     {
+        IsFirstPerson = PlayerPrefs.GetInt("FirstPerson", 0) == 1;
+        
+        Debug.Log("FirstPerson = " + IsFirstPerson);
+
         _lookAction = _references.InputActions.FindActionMap("Player").FindAction("Look");
     }
 
