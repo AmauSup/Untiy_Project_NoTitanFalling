@@ -2,15 +2,17 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Titanfall 2-style wall run and wall jump based on momentum conservation.
+/// Wall run et wall jump style Titanfall 2, basé sur la conservation du momentum.
 ///
-/// Core philosophy:
-///   - The wall redirects the player's momentum, it doesn't replace it.
-///   - All forces are additive on top of Player.ExternalVelocity.
-///   - The CharacterController naturally handles sliding along wall surfaces.
+/// Philosophie :
+///   - Le mur redirige le momentum du joueur, il ne le remplace pas.
+///   - Toutes les forces sont additives via Player.ExternalVelocity.
+///   - Écrit Player.State.CurrentState (WallRunningLeft/Right) en LateUpdate (ordre 10)
+///     pour que PlayerAnimation.cs (ordre 100) déclenche la bonne animation.
 ///
-/// Requires Player.cs to expose ExternalVelocity (public Vector3) and include it in SetMovement.
+/// Remplace le système WallRun intégré à Player.cs (conservé pour les références sérialisées).
 /// </summary>
+[DefaultExecutionOrder(10)]
 [RequireComponent(typeof(Player))]
 public class WallJump : MonoBehaviour
 {
@@ -175,6 +177,10 @@ public class WallJump : MonoBehaviour
 
             _wallNormal  = candidateNormal;
             _wallTangent = ComputeWallTangent(_wallNormal);
+
+            _player.State.CurrentState = _isWallRight
+                ? Player.PlayerState.WallRunningRight
+                : Player.PlayerState.WallRunningLeft;
 
             // ── First wall contact this air sequence ──────────────────────────
             if (!wasWallRunning)

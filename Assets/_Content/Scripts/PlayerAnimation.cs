@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(100)]
 public class PlayerAnimation : MonoBehaviour
 {
     public static PlayerAnimation Instance { get; private set; }
@@ -114,17 +115,17 @@ public class PlayerAnimation : MonoBehaviour
         _stateMapper[8] = new PlayerAnimationStateMapper()
         {
             PlayerState = Player.PlayerState.WallRunningLeft,
-            AnimatorState = "run wall left",
+            AnimatorState = "move",
             BlockingState = "",
-            Trigger = "trigger_run_wall_left",
+            Trigger = "trigger_move",
         };
 
         _stateMapper[9] = new PlayerAnimationStateMapper()
         {
             PlayerState = Player.PlayerState.WallRunningRight,
-            AnimatorState = "run wall right",
+            AnimatorState = "move",
             BlockingState = "",
-            Trigger = "trigger_run_wall_right",
+            Trigger = "trigger_move",
         };
     }
 
@@ -158,9 +159,14 @@ public class PlayerAnimation : MonoBehaviour
                 _references.Anim.SetFloat("wall", 0.5f);
                 break;
             case Player.PlayerState.WallRunningLeft:
-            case Player.PlayerState.WallRunningRight:
-                _references.Anim.SetFloat("move", Player.Instance.State.HorizontalVelocity.magnitude);
+                _references.Anim.SetFloat("move", 1f);
                 _references.Anim.SetFloat("run", 1f);
+                _references.Anim.SetFloat("wall", 0f);
+                break;
+            case Player.PlayerState.WallRunningRight:
+                _references.Anim.SetFloat("move", 1f);
+                _references.Anim.SetFloat("run", 1f);
+                _references.Anim.SetFloat("wall", 1f);
                 break;
         }
     }

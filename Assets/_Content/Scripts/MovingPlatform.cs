@@ -35,11 +35,9 @@ public class MovingPlatform : MonoBehaviour
 
         _offsetTimer = _startOffset;
 
-        // Si pas de dépendance, on démarre le compte à rebours immédiatement
-        if (_waitForPlatform == null)
-            _started = false; // sera géré par _offsetTimer
-        else
-            _started = false; // attend que _waitForPlatform ait démarré
+        // Si _waitForPlatform est null, le compte à rebours (_startOffset) démarre immédiatement.
+        // Sinon on attend que _waitForPlatform ait démarré avant de lancer _chainDelay.
+        _started = false;
     }
 
     private void Update()
