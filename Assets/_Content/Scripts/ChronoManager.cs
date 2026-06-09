@@ -10,8 +10,11 @@ public class ChronoManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _timerText;
     [SerializeField] private TextMeshProUGUI _scoresText;
 
-    [Tooltip("Délai en secondes après un stop avant de pouvoir relancer")]
+    [Tooltip("Délai en secondes après un stop avant de pouvoir relancer le chrono")]
     [SerializeField] private float _restartCooldown = 2f;
+
+    [Tooltip("Nom du niveau envoyé au leaderboard Supabase (doit correspondre au nom dans la BDD)")]
+    [SerializeField] private string _levelName = "Level_1";
 
     private float _elapsed;
     private bool _running;
@@ -52,6 +55,7 @@ public class ChronoManager : MonoBehaviour
         _cooldownRemaining = _restartCooldown;
         _scores.Add(_elapsed);
         RefreshScoresDisplay();
+        LeaderboardManager.Instance?.SubmitScore(_levelName, _elapsed);
     }
 
     private void RefreshScoresDisplay()
@@ -63,7 +67,7 @@ public class ChronoManager : MonoBehaviour
         _scoresText.text = sb.ToString();
     }
 
-    private static string FormatTime(float t)
+    public static string FormatTime(float t)
     {
         int min = (int)(t / 60);
         int sec = (int)(t % 60);

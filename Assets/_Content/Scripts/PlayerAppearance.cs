@@ -1,16 +1,17 @@
 using UnityEngine;
 
+/// <summary>
+/// Applique l'apparence sauvegardée (chapeau, ailes) au démarrage.
+/// Les valeurs sont persistées via PlayerCustomizationManager (PlayerPrefs).
+/// </summary>
 public class PlayerAppearance : MonoBehaviour
 {
-    public GameObject hat;
-    public GameObject wings;
+    [SerializeField] private GameObject _hat;
+    [SerializeField] private GameObject _wings;
 
     void Start()
     {
-        hat.SetActive(PlayerPrefs.GetInt("Hat", 0) == 1);
-        wings.SetActive(PlayerPrefs.GetInt("Wings", 0) == 1);
-
-        Debug.Log("Hat = " + PlayerPrefs.GetInt("Hat", 0));
-        Debug.Log("Wings = " + PlayerPrefs.GetInt("Wings", 0));
+        _hat.SetActive(PlayerPrefs.GetInt("Hat", 0) == 1);
+        _wings.SetActive(PlayerPrefs.GetInt("Wings", 0) == 1);
     }
 }

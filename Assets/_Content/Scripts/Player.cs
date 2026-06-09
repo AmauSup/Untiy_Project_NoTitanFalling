@@ -22,19 +22,21 @@ public class Player : MonoBehaviour
         WallRunningRight,
     }
 
+    // Système de wall run intégré à Player.cs — remplacé par WallJump.cs.
+    // Conserver pour ne pas casser les références sérialisées existantes.
     [System.Serializable]
     public class WallRun
     {
-        [Tooltip("Can the player run along walls?")]
+        [Tooltip("Can the player run along walls? (legacy — WallJump.cs handles wall running)")]
         public bool CanRunOnWalls = true;
 
-        [Tooltip("Layers considered as walkable wall")]
+        [Tooltip("Layers considered as walkable wall (legacy — WallJump.cs handles wall running)")]
         public LayerMask WallLayer = 0;
 
-        [Tooltip("Stick duration to wall before fall")]
+        [Tooltip("Stick duration to wall before fall (legacy — WallJump.cs handles wall running)")]
         public float StickDuration = 3;
 
-        [Tooltip("Gravity applyed when sticked to wall")]
+        [Tooltip("Gravity applied when sticked to wall (legacy — WallJump.cs handles wall running)")]
         public float StickedGravity = -5;
     }
 
@@ -72,7 +74,7 @@ public class Player : MonoBehaviour
         [Tooltip("Maximum number of jumps (1 = single jump, 2 = double jump)")]
         public int MaxJumps = 2;
 
-        [Tooltip("Horizontal speed applied in the looking direction on wall jump (m/s)")]
+        [Tooltip("Horizontal speed applied in the looking direction on wall jump (m/s) (legacy — WallJump.cs handles wall jumps)")]
         public float WallJumpForwardForce = 8f;
 
         [Header("Debug")]
@@ -386,7 +388,7 @@ public class Player : MonoBehaviour
 
         float speed = Mathf.Lerp(_settings.WalkSpeed, _settings.RunSpeed, _state.Running) * KMH_TO_MS;
 
-        Vector3 moveInput = new Vector3(input.x, 0, input.y); // Convert input 2D to move 3D
+        Vector3 moveInput = new Vector3(input.x, 0, input.y);
         if (_state.IsStickedToWall)
         {
             _state.StickedTime += deltaTime * Mathf.Lerp(4, 1, moveInput.magnitude);
@@ -394,9 +396,9 @@ public class Player : MonoBehaviour
         }
         else
         {
-            moveInput = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * moveInput; // Rotate move toward camera
+            moveInput = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * moveInput;
         }
-        moveInput *= speed; // Muliply move by speed
+        moveInput *= speed;
 
         _state.Velocity.x = moveInput.x;
         _state.Velocity.z = moveInput.z;
