@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 ///
 /// Requires Player.cs to expose ExternalVelocity (public Vector3) and include it in SetMovement.
 /// </summary>
+[DefaultExecutionOrder(10)]
 [RequireComponent(typeof(Player))]
 public class WallJump : MonoBehaviour
 {
@@ -175,6 +176,10 @@ public class WallJump : MonoBehaviour
 
             _wallNormal  = candidateNormal;
             _wallTangent = ComputeWallTangent(_wallNormal);
+
+            _player.State.CurrentState = _isWallRight
+                ? Player.PlayerState.WallRunningRight
+                : Player.PlayerState.WallRunningLeft;
 
             // ── First wall contact this air sequence ──────────────────────────
             if (!wasWallRunning)
