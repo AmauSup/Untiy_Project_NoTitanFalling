@@ -2,46 +2,96 @@ using UnityEngine;
 
 public class PlayerCustomizationManager : MonoBehaviour
 {
+    public Renderer robotRenderer;
+
+    public GameObject hat;
+    public GameObject wings;
+
+    private void Start()
+    {
+        LoadCustomization();
+    }
+
     public void SetBlue()
     {
+        ChangeColor(Color.blue);
+
         PlayerPrefs.SetString("PlayerColor", "Blue");
         PlayerPrefs.Save();
+
         Debug.Log("Blue selected");
     }
 
     public void SetYellow()
     {
+        ChangeColor(Color.yellow);
+
         PlayerPrefs.SetString("PlayerColor", "Yellow");
         PlayerPrefs.Save();
+
         Debug.Log("Yellow selected");
+    }
+
+    private void ChangeColor(Color newColor)
+    {
+        if (robotRenderer == null)
+            return;
+
+        Material[] mats = robotRenderer.materials;
+
+        foreach (Material mat in mats)
+        {
+            mat.color = newColor;
+        }
     }
 
     public void ToggleHat()
     {
-        int current = PlayerPrefs.GetInt("Hat", 0);
-        int newValue = current == 0 ? 1 : 0;
+        if (hat == null)
+            return;
 
-        PlayerPrefs.SetInt("Hat", newValue);
+        bool state = !hat.activeSelf;
+
+        hat.SetActive(state);
+
+        PlayerPrefs.SetInt("HatEnabled", state ? 1 : 0);
         PlayerPrefs.Save();
-
-        Debug.Log("Hat toggled = " + newValue);
     }
 
     public void ToggleWings()
     {
-        int current = PlayerPrefs.GetInt("Wings", 0);
-        int newValue = current == 0 ? 1 : 0;
+        if (wings == null)
+            return;
 
-        PlayerPrefs.SetInt("Wings", newValue);
+        bool state = !wings.activeSelf;
+
+        wings.SetActive(state);
+
+        PlayerPrefs.SetInt("WingsEnabled", state ? 1 : 0);
         PlayerPrefs.Save();
+    }
 
-        Debug.Log("Wings toggled = " + newValue);
+    private void LoadCustomization()
+    {
+        string color = PlayerPrefs.GetString("PlayerColor", "Yellow");
+
+        if (color == "Blue")
+            ChangeColor(Color.blue);
+        else
+            ChangeColor(Color.yellow);
+
+        if (hat != null)
+            hat.SetActive(PlayerPrefs.GetInt("HatEnabled", 1) == 1);
+
+        if (wings != null)
+            wings.SetActive(PlayerPrefs.GetInt("WingsEnabled", 1) == 1);
     }
     
     public void SetFirstPerson()
     {
         PlayerPrefs.SetInt("FirstPerson", 1);
         PlayerPrefs.Save();
+
         Debug.Log("Camera = First Person");
     }
 
@@ -49,6 +99,7 @@ public class PlayerCustomizationManager : MonoBehaviour
     {
         PlayerPrefs.SetInt("FirstPerson", 0);
         PlayerPrefs.Save();
+
         Debug.Log("Camera = Third Person");
     }
 }
