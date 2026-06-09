@@ -210,9 +210,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 1480188926}
   _chainDelay: 0
 --- !u!1 &90553286
@@ -456,7 +456,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
       propertyPath: m_Name
-      value: LastMovingPlatform
+      value: LastPlatform
       objectReference: {fileID: 0}
     - target: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
       propertyPath: m_Layer
@@ -874,9 +874,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 75160904}
   _chainDelay: 0
 --- !u!1 &578402521
@@ -1039,9 +1039,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 1038370281}
   _chainDelay: 0
 --- !u!1001 &656952348
@@ -1143,9 +1143,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 534165322}
   _chainDelay: 0
 --- !u!1 &961739749
@@ -1381,9 +1381,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 1556570883}
   _chainDelay: 0
 --- !u!4 &1053554037 stripped
@@ -2345,7 +2345,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
   _startOffset: 0
   _waitForPlatform: {fileID: 0}
@@ -2533,9 +2533,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 2099363830}
   _chainDelay: 0
 --- !u!4 &1572904517 stripped
@@ -3504,9 +3504,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 2121966679}
   _chainDelay: 0
 --- !u!1 &2121966677 stripped
@@ -3532,9 +3532,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
   _distance: -14
-  _speed: 3
+  _speed: 1
   _pauseAtEnd: 7
-  _startOffset: 0.1
+  _startOffset: 3
   _waitForPlatform: {fileID: 852329711}
   _chainDelay: 0
 --- !u!1660057539 &9223372036854775807
