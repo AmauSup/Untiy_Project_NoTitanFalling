@@ -179,7 +179,7 @@ public class WallJump : MonoBehaviour
             // ── First wall contact this air sequence ──────────────────────────
             if (!wasWallRunning)
             {
-                _player._settings.MaxJumps = 2;
+                _player.PlayerSettings.MaxJumps = 2;
 
                 // Project ExternalVelocity onto the wall plane:
                 // remove only the component pushing INTO the wall, keep the rest.

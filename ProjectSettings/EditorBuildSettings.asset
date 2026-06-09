@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/_Content/Scenes/Canva.unity
     guid: 55ed49d658e99fc439ebfdf5987c09cf
   - enabled: 1
-    path: Assets/_Content/Scenes/Player.unity
+    path: Assets/_Content/Scenes/Level_1.unity
     guid: e839d8321bdc8a84b8f6660fd1bd0364
   - enabled: 1
     path: Assets/_Content/Scenes/Rocket.unity

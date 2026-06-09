@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0c2b39582ab9d2e45b3f371ddf8ec9da
+guid: fc25649b83049cf4cbd0c6fce921a230
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -8,17 +8,17 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_rocket_body
-    second: {fileID: 2100000, guid: 77d930117367d8548812d422e0193086, type: 2}
+    second: {fileID: 2100000, guid: aec585f24bacc3b40a7cb2090fa6cdc7, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_rocket_reactor
-    second: {fileID: 2100000, guid: 1ff3b64bf421f4a4593381c7a8e8eb56, type: 2}
+    second: {fileID: 2100000, guid: e100eb93e6b7f4a4487a905d10d8f0fc, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: M_rocket_wings
-    second: {fileID: 2100000, guid: a85fbee69f243394599283154618a7dc, type: 2}
+    second: {fileID: 2100000, guid: 5215cf41a8d9e0d4fb7b296dfb29a068, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
