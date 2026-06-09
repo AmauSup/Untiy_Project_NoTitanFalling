@@ -1830,7 +1830,6 @@ GameObject:
   - component: {fileID: 961739751}
   - component: {fileID: 961739750}
   - component: {fileID: 961739754}
-  - component: {fileID: 961739755}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1970,7 +1969,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCamera
   IsFirstPerson: 0
   _settings:
-    LookSensitivity: 20
+    LookSensitivity: 2000
     FollowSmoothness: 0.1
     Distance: 4.86
     VerticalOffset: 1.3
@@ -1984,18 +1983,6 @@ MonoBehaviour:
   _references:
     InputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     Target: {fileID: 1456169374}
---- !u!114 &961739755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 961739749}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fce866d0c086c043af6a6e5e635d197, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FirstPerson
 --- !u!1 &982847254
 GameObject:
   m_ObjectHideFlags: 0
@@ -3095,7 +3082,7 @@ MonoBehaviour:
     Cooldown: 0.8
     MaxAirDashes: 1
     KeyboardKey: 19
-    UseGamepadSouth: 0
+    UseGamepadWest: 1
     InputBuffer: 0.15
 --- !u!114 &1456169380
 MonoBehaviour:

@@ -212,6 +212,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 1480188926}
+  _chainDelay: 0
 --- !u!1 &90553286
 GameObject:
   m_ObjectHideFlags: 0
@@ -453,7 +456,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
       propertyPath: m_Name
-      value: MovingPlatform (9)
+      value: LastMovingPlatform
       objectReference: {fileID: 0}
     - target: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
       propertyPath: m_Layer
@@ -514,10 +517,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 490916185}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
 --- !u!1 &257089148 stripped
 GameObject:
@@ -555,12 +555,12 @@ Transform:
   m_Children:
   - {fileID: 1480188927}
   - {fileID: 75160903}
-  - {fileID: 852329710}
-  - {fileID: 2099363829}
-  - {fileID: 1038370280}
   - {fileID: 534165321}
+  - {fileID: 852329710}
   - {fileID: 2121966678}
+  - {fileID: 2099363829}
   - {fileID: 1556570882}
+  - {fileID: 1038370280}
   - {fileID: 579548112}
   - {fileID: 490916184}
   m_Father: {fileID: 0}
@@ -846,31 +846,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &490916183 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
-  m_PrefabInstance: {fileID: 236142983}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &490916184 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4162901986030213408, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
   m_PrefabInstance: {fileID: 236142983}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &490916185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 490916183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db735b26b28f9314fae3bbff5feae969, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MovingPlatform
-  _distance: -14
-  _speed: 3
-  _pauseAtEnd: 14
 --- !u!1 &534165320 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
@@ -896,6 +876,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 75160904}
+  _chainDelay: 0
 --- !u!1 &578402521
 GameObject:
   m_ObjectHideFlags: 0
@@ -1058,6 +1041,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 1038370281}
+  _chainDelay: 0
 --- !u!1001 &656952348
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1159,6 +1145,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 534165322}
+  _chainDelay: 0
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0
@@ -1394,6 +1383,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 1556570883}
+  _chainDelay: 0
 --- !u!4 &1053554037 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8456217366200567029, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
@@ -2308,7 +2300,7 @@ MonoBehaviour:
     Cooldown: 0.8
     MaxAirDashes: 1
     KeyboardKey: 19
-    UseGamepadSouth: 0
+    UseGamepadWest: 1
     InputBuffer: 0.15
 --- !u!114 &1456169380
 MonoBehaviour:
@@ -2355,6 +2347,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0
+  _waitForPlatform: {fileID: 0}
+  _chainDelay: 0
 --- !u!4 &1480188927 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4162901986030213408, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
@@ -2540,6 +2535,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 2099363830}
+  _chainDelay: 0
 --- !u!4 &1572904517 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1922065289920262768, guid: dce89e082ea7b9c48ab0fe0f0d38f147, type: 3}
@@ -3508,6 +3506,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 2121966679}
+  _chainDelay: 0
 --- !u!1 &2121966677 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3642930377068708762, guid: 612432a2dba9cea498f790e4462ae24f, type: 3}
@@ -3533,6 +3534,9 @@ MonoBehaviour:
   _distance: -14
   _speed: 3
   _pauseAtEnd: 7
+  _startOffset: 0.1
+  _waitForPlatform: {fileID: 852329711}
+  _chainDelay: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

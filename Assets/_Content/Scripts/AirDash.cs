@@ -27,8 +27,8 @@ public class AirDash : MonoBehaviour
         [Tooltip("Keyboard key that triggers the dash")]
         public Key KeyboardKey = Key.LeftShift;
 
-        [Tooltip("Use gamepad South button (A on Xbox) as well")]
-        public bool UseGamepadSouth = true;
+        [Tooltip("Use gamepad West button (X on Xbox) as well")]
+        public bool UseGamepadWest = true;
 
         [Tooltip("Input buffer window (s) — the dash fires within this delay after pressing the key,\n" +
                  "even if the player is not yet airborne at the exact moment of the press.")]
@@ -110,7 +110,7 @@ public class AirDash : MonoBehaviour
         if (Keyboard.current != null && (Keyboard.current[_settings.KeyboardKey]?.wasPressedThisFrame ?? false))
             return true;
 
-        if (_settings.UseGamepadSouth && Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
+        if (_settings.UseGamepadWest && Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame)
             return true;
 
         return false;
